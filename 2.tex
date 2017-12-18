@@ -1,0 +1,310 @@
+\documentclass[11pt]{llncs}
+\usepackage{preamble}
+
+\begin{document}
+\title{
+Computability Class 2017 - 2018\\
+Exercise Set 2}
+\date{\today}
+\author{Dionysis Zindros\\
+    \email{dionyziz@di.uoa.gr}}
+\institute{
+National and Kapodistrian University of Athens}
+\maketitle
+\noindent
+\makebox[\linewidth]{\small \today}
+
+\thispagestyle{plain}
+
+\section*{Exercise 1}
+\begin{lemma}
+All primitive recursive functions are total.
+\end{lemma}
+\begin{proof}
+By induction on the recursive definition of primitive recursive functions. The
+\textit{constant}, \textit{successor}, and \textit{projection} functions are trivially total. For
+\textit{composition}, suppose by induction that $f$ and $g_1, \cdots, g_k$ are total,
+then let:
+
+\[
+  h(x_1, \cdots, x_m) = f(g_1(x_1, \cdots, x_m), \cdots, g_k(x_1, \cdots,
+x_m))
+\]
+
+Clearly $h$ is total. For \textit{primitive recursion}, suppose by induction that $f$ and
+$g$ are total. Then let:
+
+\[
+  h(S(y), x_1, \cdots, x_k) = g(y, h(y, x_1, \cdots, x_k), x_1, \cdots, x_k)
+\]
+
+For contradiction fix the smallest $S(y)$ such that $h$ is not
+total. But clearly the right-hand side is total.
+\qed
+\end{proof}
+
+\section*{Exercise 2}
+\subsection*{(a)}
+\begin{lemma}
+If $g$ is primitive recursive, then the function \textsf{sum} is primitive
+recursive:
+
+\[
+\textsf{sum}(z, x) = \sum_{i = 0}^z g(i, x)
+\]
+\end{lemma}
+\begin{proof}
+We can construct \textsf{sum} as follows:
+
+\begin{align*}
+  \textsf{sum}(0, x) &= g(0, x)\\
+  \textsf{sum}(i, x) &= \textsf{sum}(i - 1, x) + g(i, x)
+\end{align*}
+
+The last part can be written formally:
+
+\[
+  \textsf{sum}(S(i), x)
+  = \textsf{sum}(i, x) + g(i, x) = f(i, \textsf{sum}(i, x), x)
+\]
+
+By the fact that $g$ and $+$ are primitive recursive, $f$ is also primitive
+recursive and using primitive recursion on the first argument of \textsf{sum},
+we conclude that \textsf{sum} is primitive recursive.
+\qed
+\end{proof}
+\begin{lemma}
+If $g$ is primitive recursive, then the function \textsf{prod} is primitive
+recursive:
+
+\[
+  \textsf{prod} = \prod_{i=0}^z g(i, x)
+\]
+\end{lemma}
+\begin{proof}
+The construction for \textsf{prod} is similar:
+
+\begin{align*}
+  \textsf{prod}(0, x) &= g(0, x)\\
+  \textsf{prod}(S(i), x) &= \textsf{prod}(i, x) * g(i, x)
+\end{align*}
+\qed
+\end{proof}
+
+\subsection*{(b)}
+
+\begin{lemma}
+The function $(\mu\>i \leq z)[(i, x) \in R]$ is primitive recursive.
+\end{lemma}
+\begin{proof}
+Assume $(\mu\>i \leq z)[(i, x) \in R]$ returns $z + 1$ if
+$\not\exists i \leq z: (i, x) \in R$.
+
+We define $f$ using the primitive recursion constructs:
+
+\begin{align*}
+  f(0, x) &= 0\\
+  f(i + 1, x) &= \begin{cases}
+             f(i, x) \text{, if } f(i, x) \neq i\\
+             i + 1 \text{, if } (i + 1, x) \in R\\
+             i + 2 \text{, otherwise}
+            \end{cases}
+\end{align*}
+
+The above can be implemented using primitive recursion because \textsf{if} is
+primitive recursive.
+\qed
+\end{proof}
+
+\section*{Exercise 3}
+\begin{lemma}
+Let $g_1, g_2, h_1, h_2$ be primitive recursive functions. Let $f_1, f_2$ be
+defined as follows:
+
+\begin{align*}
+  f_1(0, x)     &= g_1(x)\\
+  f_1(y + 1, x) &= h_1(f_1(y, x), f_2(y, x), y, x)\\
+  \\
+  f_2(0, x)     &= g_2(x)\\
+  f_2(y + 1, x) &= h_2(f_1(y, x), f_2(y, x), y, x)\\
+\end{align*}
+
+Then $f_1, f_2$ are primitive recursive.
+\end{lemma}
+\begin{proof}
+We create a function $f$ representing the pair $f_1, f_2$. Pairs of numbers can
+be G\"odel encoded and decoded with primitive recursive functions. We denote
+this encoding with $f_1\|f_2$ and the decoding with $(f_1\|f_2)_1$ and
+$(f_1\|f_2)_2$ respectively.
+
+Then $f$ is primitive recursive:
+\begin{align*}
+  f(0, x) &= g_1(x)\|g_2(x)\\
+  f(y + 1, x) &= h_1'(f(y, x), y, x)\|h_2'(f(y, x), y, x)
+\end{align*}
+
+Note that we needed to define the primitive recursive functions $h_1', h_2'$
+that first decode $f(y, x)_1$ and $f(y, x)_2$ respectively prior to applying
+$h_1$ or $h_2$ to them.
+
+But $f_1(y, x) = f(y, x)_1$ and $f_2(y, x) = f(y, x)_2$ and so they are
+primitive recursive.
+\qed
+\end{proof}
+
+\section*{Exercise 4}
+\begin{lemma}
+  Let $g, h, \tau$ be functions. Then let $f$ be defined as the solution to the
+  following system of equations:
+
+  \begin{align*}
+    f(0, y) &= g(y)\\
+    f(x + 1, y) &= h(f(x, \tau(x, y)), x, y)
+  \end{align*}
+
+  Then $f$ exists and, if $g, h, \tau$ are primitive recursive, so is $f$.
+\end{lemma}
+\begin{proof}
+$f$ is well-defined because the recursive step always reduces $x$. Because the
+reduction is always by one, it will eventually reach $0$.
+
+For the primitive recursion part, use the notation above and define $f'$ as
+follows:
+
+\begin{align*}
+  f'(0, y) &= g(y)\|\tau(0, y)\\
+  f'(x + 1, y) &= h(f'(x, y)_{x+1}, x, y)\|\tau(0, y)\|\cdots\|\tau(x + 1, y)
+\end{align*}
+
+Essentially, for a fixed $y$, $f'(x, y)$ collects all the values of $\tau(i, y)$
+for $i \leq x$ and G\"odel encodes them together. Because the number of $\tau$
+values that need to be calculated and encoded is bounded (by $x + 1$), and
+because $\tau$ is primitive recursive, therefore $f'$ is also primitive
+recursive.
+
+But then $f(x, y) = f'(x, y)_1$ is also primitive recursive.
+\qed
+\end{proof}
+
+\section*{Exercise 5}
+Give an example of a $\mu$-recursive function which is not primitive recursive.
+
+\paragraph{Solution.}
+
+The Ackermann function:
+
+\[
+  A(m, n) = \begin{cases}
+    n + 1 \text{, if } m = 0\\
+    A(m - 1, 1 \text{, if } m > 0 \text{ and } n = 0\\
+    A(m - 1, A(m, n - 1)) \text{, otherwise}
+  \end{cases}
+\]
+
+\section*{Exercise 6}
+
+Find a grammar for the language $\mathcal{L} = \{ ww: w \in \{0, 1\}^* \}$.
+
+\paragraph{Solution.}
+
+\begin{align*}
+  S  &\rightarrow AB\\
+  A  &\rightarrow A0P | A1Q | \epsilon\\
+  P0 &\rightarrow 0P\\
+  P1 &\rightarrow 1P\\
+  PB &\rightarrow B0\\
+  Q0 &\rightarrow 0Q\\
+  Q1 &\rightarrow 1Q\\
+  QB &\rightarrow Q1
+\end{align*}
+
+\section*{Exercise 7}
+
+\begin{lemma}
+$\mathcal{L} = \{a^n b^n c^n: n \geq 1\}$ is context-sensitive.
+\end{lemma}
+\begin{proof}
+By construction. $\mathcal{L}$ is generated by the following non-contracting
+grammar, and therefore it is context-sensitive:
+
+\begin{align*}
+  S  &\rightarrow ABC\\
+  A  &\rightarrow AaP | a\\
+  B  &\rightarrow b\\
+  C  &\rightarrow c\\
+  Pa &\rightarrow aP\\
+  PB &\rightarrow BbP\\
+  Pb &\rightarrow bP\\
+  PC &\rightarrow Cc
+\end{align*}
+\qed
+\end{proof}
+
+\section*{Exercise 8}
+\subsection*{(a)}
+Find a grammar that generates the language
+$\mathcal{L} = \{1^{2^i}: i \geq 1\}$.
+
+\paragraph{Solution.}
+
+\begin{align*}
+  S  &\rightarrow D1Z\\
+  D  &\rightarrow DD | \epsilon\\
+  D1 &\rightarrow 11P\\
+  P1 &\rightarrow 11P\\
+  PZ &\rightarrow Z\\
+  Z  &\rightarrow \epsilon\\
+\end{align*}
+
+\subsection*{(b)}
+\begin{lemma}
+$\mathcal{L} = \{1^{2^i}: i \geq 1\}$ is context-sensitive.
+\end{lemma}
+\begin{proof}
+By construction. $\mathcal{L}$ is generated by the following
+non-contracting grammar and is therefore context-sensitive:
+
+\begin{align*}
+  S    &\rightarrow 1 | 11 | 1111 | D1Z\\
+  D    &\rightarrow DD\\
+  D1   &\rightarrow 11P\\
+  P1   &\rightarrow 11P\\
+  D1Z  &\rightarrow 11Z\\
+  D11Z &\rightarrow 1111\\
+  P1Z  &\rightarrow 11Z\\
+  P11Z &\rightarrow 1111
+\end{align*}
+\qed
+\end{proof}
+
+\section*{Exercise 9}
+Show that each context-sensitive grammar $G$ generates a language which can be
+generated by a grammar $G'$ with rules of the form $uAv \rightarrow uwv$ where
+$A \in V \setminus \Sigma$ and $u, v, w \in V^*$ with $w \neq \epsilon$.
+
+\paragraph{Solution.}
+This is clearly true, as the form of the rules for $G'$ are exactly the same as
+the rules constricting a context-sensitive grammar \cite{chomsky}.
+
+Furthermore, removing the restriction $w \neq \epsilon$ produces a class
+of grammars which generate all the languages in $\textsc{RE}$.
+
+\section*{Exercise 10}
+\begin{lemma}
+  $\mathcal{L}_{LBA} = \{\langle M, w \rangle: M \text{ is an LBA and } M(w)\downarrow q_\text{yes}\} \in \textsc{REC}$.
+\end{lemma}
+\begin{proof}
+By construction. Let $T$ be a Turing Machine which decides $\mathcal{L}_{LBA}$.
+It works as follows: On input $\langle M, w \rangle$, $T$ decodes $M$ into its
+alphabet $\Sigma$ and its state set $Q$, then simulates $M$ with input $w$ for
+$\alpha = \Sigma^{|w|} |Q| |w|$ steps. If at any time during the simulation $M$
+has accepted, then $M$ accepts. If $M$ has rejected, then $T$ rejects. If $T$
+has not reached a halting state, then $T$ rejects. Because $T$ can only reuse
+the tape space occupied by the input, its possible configurations are up to
+$\alpha$ and, hence, since it did not halt within $\alpha$ simulation steps, it
+necessarily loops.
+\qed
+\end{proof}
+
+\bibliography{bibliography}
+\end{document}

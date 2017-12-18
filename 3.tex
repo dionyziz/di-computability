@@ -1,0 +1,394 @@
+\documentclass[11pt]{llncs}
+\usepackage{preamble}
+
+\begin{document}
+\title{
+Computability Class 2017 - 2018\\
+Exercise Set 3}
+\date{\today}
+\author{Dionysis Zindros\\
+    \email{dionyziz@di.uoa.gr}}
+\institute{
+National and Kapodistrian University of Athens}
+\maketitle
+\noindent
+\makebox[\linewidth]{\small \today}
+
+\thispagestyle{plain}
+
+\section*{Exercise 1}
+\subsection*{(a)}
+\subsection*{(b)}
+
+\section*{Exercise 2}
+\begin{lemma}
+Let $\mathcal{L} \in \textsc{RE} \setminus \textsc{REC}$ and some TM $M$ such
+that $\mathcal{L}(M) = \mathcal{L}$. Then the set
+$S_\mathcal{L} = \{w \in \Sigma^*: M(w)\uparrow\}$ is infinite.
+\end{lemma}
+\begin{proof}
+By contradiction. Suppose $S_\mathcal{L}$ were finite. Then we could construct
+a TM $M_2$ which always terminates such that $\mathcal{L}(M_2) = \mathcal{L}$.
+The construction of this machine is shown in Algorithm~\ref{alg.ex2}. The
+machine first checks if the input word is in the set $S_\mathcal{L}$. Because
+the set is finite, it can be encoded in the finite transition function of $M_2$.
+In that case, the machine rejects the input. Otherwise, $M_2$ uses universality
+to simulate the execution of $M$ on $w$, which is now guaranteed to terminate.
+Thus, $\mathcal{L} \in \textsc{REC}$.
+\qed
+\end{proof}
+
+\begin{figure}[t]
+\begin{algorithm}[H]
+  \caption{\label{alg.ex2}
+      The machine $M_2$ which computes $\mathcal{L}$
+      provided that $S_\mathcal{L}$ is finite.
+  }
+  \begin{algorithmic}[1]
+      \Function{$M_2$}{$w$}
+        \If{$w \in S_\mathcal{L}$}
+            \State\Return{\textsc{False}}
+        \EndIf
+        \State\Return{$M(w)$}
+      \EndFunction
+  \end{algorithmic}
+\end{algorithm}
+\end{figure}
+
+\section*{Exercise 3}
+\begin{lemma}
+$\mathcal{L} = \{
+  \langle M, w \rangle \in \Sigma^*:
+  M(w) \text{ visits all non-terminating states of } M
+\} \not \in \textsc{REC}$.
+\end{lemma}
+\begin{proof}
+By contradiction. Suppose $\mathcal{L} \in \textsc{REC}$. Then there exists some
+TM $M$ that computes $\mathcal{L}$. We now construct an impossible TM $M_3$ as
+seen in Algorithm~\ref{alg.ex3}. The machine initially extracts its own encoding
+$M_3$ using the Recursion Theorem~\cite{sipser}. Subsequently it utilizes
+universality to compute $M(\langle M_3, w \rangle)$. If $M$ returns
+\textsc{True}, then $M_3$ terminates without visiting all its non-terminating
+states. Otherwise, if $M$ returns $\textsc{False}$, then $M_3$ visits all of its
+non-terminating states before terminating. Technically achieving the visitation
+of all non-terminating states $Q' = Q \setminus \{Q_\text{accept},
+Q_\text{reject}\}$ is not difficult. To do this, the tape is filled with the
+special symbols $\sigma_1, \sigma_2, \cdots, \sigma_{|Q'|}$. The head is rewound
+to $\sigma_1$ and the active state transitioned to $Q_1$. The transition
+function then defines that, upon reading symbol $\sigma_i$ at state $Q_i$, the
+machine transitions to state $Q_{i+1}$ and moves to the right. Then it is easy
+to see that if $M_3(w)$ visits all non-terminating states, then $M(\langle M_3,
+w \rangle)$ will return \textsc{False} and vice versa.
+\qed
+\end{proof}
+
+\begin{figure}[t]
+\begin{algorithm}[H]
+  \caption{\label{alg.ex3}
+      The impossible machine $M_3$ constructed using $M$.
+  }
+  \begin{algorithmic}[1]
+      \Function{$M_3$}{$w$}
+        \Let{\langle M_3 \rangle}{\textsc{SELF}}
+        \If{$M(\langle M_3, w \rangle)$}
+          \State\Return{\textsc{True}}
+        \EndIf
+        \State{visit all non-terminating states of $M_3$}
+        \State\Return{\textsc{True}}
+      \EndFunction
+  \end{algorithmic}
+\end{algorithm}
+\end{figure}
+
+\section*{Exercise 4}
+\begin{lemma}
+Let $\mathcal{L} = \{
+    \langle M \rangle \in \Sigma^*:
+    \forall w \in \Sigma^*:
+    M(w) \text{ prints 1 before immediately moving left}
+\}$. Then $\mathcal{L} \not \in \textsc{REC}$.
+\end{lemma}
+\begin{proof}
+By contradiction. Suppose $\mathcal{L} \in \textsc{REC}$ and let $M$ be its TM.
+Then we construct the impossible machine $M_4$ seen in Algorithm~\ref{alg.ex4}.
+The machine invokes the Recursion Theorem to determine its own encoding.
+Subsequently it calls $M$ using universality passing $\langle M_4 \rangle$. If
+$M$ returns \textsc{True}, then $M_4$ terminates. Otherwise it intentionally
+prints $1$ and moves left. Care must be taken for the symbol $1$ to not be used
+otherwise in this machine's implementation. The contradiction arises from the
+fact that if $M_4(\langle M \rangle)$ return \textsc{True}, then $M$ does not
+ever print $1$; and if it is \textsc{False}, then $M$ prints $1$ and moves left.
+\qed
+\end{proof}
+
+\begin{figure}[t]
+\begin{algorithm}[H]
+  \caption{\label{alg.ex4}
+      The impossible machine $M_4$ constructed using $M$.
+  }
+  \begin{algorithmic}[1]
+      \Function{$M_4$}{$w$}
+        \Let{\langle M_4 \rangle}{\textsc{SELF}}
+        \If{$M(\langle M_4 \rangle)$}
+          \State\Return{\textsc{True}}
+        \EndIf
+        \State{print $1$ and move left}
+        \State\Return{\textsc{True}}
+      \EndFunction
+  \end{algorithmic}
+\end{algorithm}
+\end{figure}
+
+\section*{Exercise 5}
+\begin{lemma}
+Let $\mathcal{L} = \{
+    \langle M \rangle \in \Sigma^*:
+    \forall w \in \Sigma^*:
+    M(w) \text{ terminates after an even number of steps}
+\}$. Then $\mathcal{L} \not \in \textsc{REC}$.
+\end{lemma}
+\begin{proof}
+By contradiction by reduction from the Halting Problem. Suppose $\mathcal{L} \in
+\textsc{REC}$ and let $M_\mathcal{L}$ be its TM. Then we construct an impossible
+TM $M_5$ that solves the halting problem as seen in Algorithm~\ref{alg.ex5}.
+Specifically, the machine $M_5$ takes as input a machine $\langle M \rangle$
+and outputs \textsc{True} if $M$ terminates for all inputs, or \textsc{False} if
+there exists some input $w$ such that $M(w)$ does not terminate.
+The machine $M_5$ works as follows. First, it uses the function
+\textsc{make-even} to transform the input machine $M$ into a machine $M'$ that
+behaves identically to $M$, except that it always takes an even number of steps.
+The technical details behind this construction are straightforward: Each state
+$Q_i$ of $M$ is converted into two states $Q_i^0$, $Q_i^1$ of $M'$ such that
+$Q_i^0$ always transitions to $Q_i^1$ and leaves the tape head in position,
+while $Q_i^1$ behaves identically to $Q_i^0$. Subsequently, it invokes
+universality to compute $M_\mathcal{L}(\langle M' \rangle)$. Because for the
+same input $w$, either both $M'(w)$ and $M(w)$ halt or both do not halt,
+therefore $M_5$ solves the halting problem for $\langle M \rangle$. \qed
+\end{proof}
+
+\begin{figure}[t]
+\begin{algorithm}[H]
+  \caption{\label{alg.ex5}
+      The impossible halting-problem machine $M_5$
+      constructed using $M_\mathcal{L}$.
+  }
+  \begin{algorithmic}[1]
+      \Function{$M_5$}{$\langle M \rangle$}
+        \Let{\langle M' \rangle}{\textsc{make-even}(\langle M \rangle)}
+        \If{$M_\mathcal{L}(\langle M' \rangle)$}
+          \State\Return{\textsc{True}}
+        \EndIf
+        \State\Return{\textsc{False}}
+      \EndFunction
+  \end{algorithmic}
+\end{algorithm}
+\end{figure}
+
+\section*{Exercise 6}
+\begin{lemma}
+Let $\mathcal{L} = \{
+  \langle M_1, M_2 \rangle \in \{0, 1\}^*:
+  \exists w \in \{0, 1\}^*: \exists n, m \in \mathbb{N}:
+  M_1(w)\downarrow^m_{q_\text{yes}} \land
+  M_2(w)\downarrow^n_{q_\text{yes}} \land
+  n \neq m
+\}$. Then $\mathcal{L} \not \in \textsc{REC}$.
+\end{lemma}
+\begin{proof}
+By contradiction by reduction from the Halting Problem. Suppose
+$\mathcal{L} \in \textsc{REC}$ and let $M_\mathcal{L}$ be its TM. Then we
+construct an impossible TM $M_6$ that solves the Halting Problem. Specifically,
+$M_6$ takes as input a TM $\langle M \rangle$ and returns \textsc{True} if $M_6$
+terminates with $q_\text{yes}$ for all inputs; or \textsc{False} if there exists
+some input $w$ such that $M_6(w)$ does not terminate or terminates with
+$q_\text{no}$. The machine is described in Algorithm~\ref{alg.ex6} and works as
+follows. First, the machine $M_5$ invokes \textsc{increase-steps} on
+$\langle M \rangle$ to obtain $\langle M' \rangle$, a machine that behaves
+identically to $M$, except that it has $100$ more states which it goes through
+at the beginning of its execution. Then, invoking universality, $M_5$ calls
+$M_\mathcal{L}$ with parameters $M', M_\text{trivial}$, where $M_\text{trivial}$
+is a machine which always terminates with $q_\text{yes}$ in one step.
+
+To see why $M_5$ solves the halting problem, observe that it will return
+\textsc{True} only if $M'$ terminates with $q_\text{yes}$ for some input in a
+different number of steps than $M_\text{trivial}$. But if $M'$ terminates at
+all, then it will terminate in a larger number of steps than $M_\text{trivial}$,
+since $M_\text{trivial}$ always takes 1 step, while $M'$ always takes at least
+$100$ steps. But $M'$ terminates with $q_\text{yes}$ iff $M$ terminates
+with $q_\text{yes}$. Therefore $M_5$ solves the halting problem.
+\qed
+\end{proof}
+
+\begin{figure}[t]
+\begin{algorithm}[H]
+  \caption{\label{alg.ex6}
+      The impossible halting-problem machine $M_6$
+      constructed using $M_\mathcal{L}$.
+  }
+  \begin{algorithmic}[1]
+      \Function{$M_5$}{$\langle M \rangle$}
+        \Let{\langle M' \rangle}{\textsc{increase-steps}(\langle M \rangle)}
+        \If{$M_\mathcal{L}(\langle M', M_\text{trivial} \rangle)$}
+          \State\Return{\textsc{True}}
+        \EndIf
+        \State\Return{\textsc{False}}
+      \EndFunction
+  \end{algorithmic}
+\end{algorithm}
+\end{figure}
+
+\section*{Exercise 7}
+\begin{lemma}
+$\forall \mathcal{L} \in \textsc{RE}:
+\mathcal{L} \leq_m
+\{\langle M \in \Sigma^* \rangle: M(\langle M \rangle)\downarrow\}$
+\end{lemma}
+\begin{proof}
+Let $\mathcal{L}$ be an arbitrary language in \textsc{RE} and let its recognizer
+TM be $M$. We will now construct a computable reduction $f_7$ as shown in
+Algorithm~\ref{alg.ex7}. The computable function $f_7$ immediately returns the
+description of a machine $M_7$ which it does not execute. The machine $M_7$
+ignores its input and has
+the constant $w$ encoded in it. Using universality, it invokes $M$ with input
+$w$. The reduction is correct because, if $w \in \mathcal{L}$, then $M_7$ will
+terminate for all inputs, and thus
+$M_7 \in \{\langle M \in \Sigma^* \rangle:
+M(\langle M \rangle)\downarrow\}$. Otherwise, if $w \not \in \mathcal{L}$, then
+$M_7$ will not terminate for any input, and thus
+$M_7 \not \in \{\langle M \in \Sigma^* \rangle: M(\langle M
+\rangle)\downarrow\}$.
+\qed
+\end{proof}
+
+\begin{figure}[t]
+\begin{algorithm}[H]
+  \caption{\label{alg.ex7}
+      A reduction for an \textsc{RE} language.
+  }
+  \begin{algorithmic}[1]
+      \Function{$f_7$}{$w$}
+        \State\Return{The machine described as follows:}
+        \Function{$M_7$}{$\_$}
+          \If{$M(w)\downarrow_{q_\text{yes}}$}
+              \State\Return{\textsc{True}}
+          \Else
+              \State\Return{\textsc{False}}
+          \EndIf
+        \EndFunction
+      \EndFunction
+  \end{algorithmic}
+\end{algorithm}
+\end{figure}
+
+
+\section*{Exercise 8}
+\begin{lemma}
+$\mathcal{L} \in \textsc{REC} \Leftrightarrow \mathcal{L} \leq_m 0^*1^*$.
+\end{lemma}
+\begin{proof}
+For the forward direction. Suppose $\mathcal{L} \in \textsc{REC}$ and its TM is
+$M$. Then it is straightforward to transform $M$ to compute the reduction
+function $f(w)$ which outputs $\epsilon$ if $w \in \mathcal{L}$ or $10$
+as seen in Algorithm~\ref{alg.ex8a}. $\epsilon$ matches the given regular
+expression, while $10$ does not.
+
+For the reverse direction. Suppose there exists some computable reduction $f$.
+Then we can easily construct a TM $M$ which computes $\mathcal{L}$ as seen in
+Algorithm~\ref{alg.ex8b}. The machine first invokes the reduction function $f$
+to transform the input $w$ into a new word $w'$ which matches the regular
+expression $0^*1^*$ iff $w \in \mathcal{L}$. The Turing Machine then checks if
+$w'$ matches the regular expression, which we denote with the $\sim$ operator.
+Regular expression matching is computable due to regularity.
+\qed
+\end{proof}
+
+\begin{figure}[t]
+\begin{algorithm}[H]
+  \caption{\label{alg.ex8a}
+      From a Turing Machine $M$ to a computable function $f_8$.
+  }
+  \begin{algorithmic}[1]
+      \Function{$f_8$}{$w$}
+        \If{$M(w)\downarrow_{q_\text{yes}}$}
+            \State\Return{$\epsilon$}
+        \Else
+            \State\Return{$10$}
+        \EndIf
+      \EndFunction
+  \end{algorithmic}
+\end{algorithm}
+\end{figure}
+
+\begin{figure}[t]
+\begin{algorithm}[H]
+  \caption{\label{alg.ex8b}
+      From a computable function $f$ to a Turing Machine $M_8$.
+  }
+  \begin{algorithmic}[1]
+      \Function{$M_8$}{$w$}
+        \Let{w'}{f(w)}
+        \If{$w' \sim 0^*1^*$}
+            \State\Return{\textsc{True}}
+        \Else
+            \State\Return{\textsc{False}}
+        \EndIf
+      \EndFunction
+  \end{algorithmic}
+\end{algorithm}
+\end{figure}
+
+
+\section*{Exercise 9}
+\begin{lemma}
+Let
+$\mathcal{L} = \{
+    \langle M \rangle \in \Sigma^*:
+    \exists w \in \Sigma^*:
+    |w| = 1871 \land
+    w \in \mathcal{L}(M)
+\}$. Then $\mathcal{L} \in \textsc{RE}$, but
+$\overline{\mathcal{L}} \not \in \textsc{RE}$.
+\end{lemma}
+\begin{proof}
+For the inclusion result, we construct an enumerator machine $M_9$ shown in
+Algorithm~\ref{alg.ex9}. The machine loops through all pairs $(M, i)$ in
+a dove-tailing fashion, where $M$ is a TM and $i$ is an integer number of steps.
+Then, for all $1871$-sized inputs $w$, it checks if the machine $M$ outputs
+$w$ in exactly $i$ steps, and, if so, emits it.
+
+For the exclusion result, suppose for contradiction that $\overline{\mathcal{L}}
+\in \textsc{RE}$. Then $\mathcal{L} \in \textsc{REC}$. But
+$\textsc{C} = \{
+    \mathcal{L}:
+    \exists w \in \Sigma^*: |w| = 1871 \land w \in \mathcal{L}
+\}$
+is a non-trivial complexity class and $\mathcal{L}$ contains all the TM which
+compute languages in \textsc{C}, and thus contradicts
+Rice's Theorem.
+\qed
+\end{proof}
+
+\begin{figure}[t]
+\begin{algorithm}[H]
+  \caption{\label{alg.ex9}
+      The machine $M_9$ which enumerates all machines
+      outputting words of a specific size.
+  }
+  \begin{algorithmic}[1]
+      \Function{$M_9$}{}
+        \For{dove-tail $(\langle M \rangle, i) \in \mathbb{N}^2$}
+            \For{$w \in \Sigma^{1871}$}
+                \If{$M(w)\downarrow^i_{q_\text{yes}}$}
+                    \State{\textsf{Emit }}{M(w)}
+                \EndIf
+            \EndFor
+        \EndFor
+      \EndFunction
+  \end{algorithmic}
+\end{algorithm}
+\end{figure}
+
+\section*{Exercise 10}
+
+\bibliography{bibliography}
+\end{document}

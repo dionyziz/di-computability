@@ -1,0 +1,602 @@
+\documentclass[11pt]{llncs}
+\usepackage{preamble}
+
+\begin{document}
+\title{
+Computability Class 2017 - 2018\\
+Exercise Set 1}
+\date{\today}
+\author{Dionysis Zindros\\
+    \email{dionyziz@di.uoa.gr}}
+\institute{
+National and Kapodistrian University of Athens}
+\maketitle
+\noindent
+\makebox[\linewidth]{\small \today}
+
+\thispagestyle{plain}
+
+\section*{Exercise 1}
+Let $f: \Sigma^* \rightarrow \Sigma^*$ be a one-to-one onto computable function.
+Show that $f^{-1}$ is computable.
+
+\paragraph{Solution.}
+
+$f^{-1}$ is clearly computable when $f$ is total through direct brute force.
+To show that $f^{-1}$ is computable in the case when $f$ is partial, we
+will devise an algorithm which finds the inverse in a finite number of
+steps, provided that it exists. This algorithm is shown in
+Algorithm~\ref{alg.1}. Intuitively, the algorithm attempts to run all steps of
+all inputs ``in parallel'' without encountering an infinite loop.
+
+\begin{figure}[t]
+\begin{algorithm}[H]
+  \caption{\label{alg.1}
+      The generic function inversion algorithm
+      $\textsf{inverse}_M$
+      parameterised by a machine $M$ which computes
+      a partial function $f$}
+  \begin{algorithmic}[1]
+      \Function{{\sf inverse}$_M$}{$x$}
+        \Let{\ell}{0}
+        \While{\textsc{True}}
+            \Let{\ell}{\ell + 1}
+            \State{Initialise machine $M$ for input $\ell$}
+            \Let{i}{1}
+            \For{$y = \ell \text{ down to } 1$}
+                \State{Simulate machine $M$ with input $y$ for exactly $i$ steps}
+                \If{$M$ \text{has terminated with output} $x$}
+                    \State\Return{$y$}
+                \EndIf
+                \Let{i}{i + 1}
+            \EndFor
+        \EndWhile
+      \EndFunction
+  \end{algorithmic}
+\end{algorithm}
+\end{figure}
+
+The algorithm is parameterised by a Turing Machine $M$ which computes
+the partial function $f$ and works as follows. It attempts to invert the
+function by incrementing a variable $\ell$. At each loop iteration, $\ell$
+denotes the maximum input as well as the maximum number of steps allowed.
+
+\begin{lemma}
+If $\textsf{inverse}_M$ is executed with an input $x$ such that there exists
+a $y$ for which $f(x) = y$, then $\textsf{inverse}_M$ will terminate with output
+$y$.
+\end{lemma}
+\begin{proof}
+Because $f$ has a value for input $x$, therefore $M$ will terminate with input
+$x$. Assume this termination occurs after $i$ steps.
+
+Then, the main for loop of the $\textsf{inverse}_M$ function will terminate in
+the loop at the iteration $\ell = i + y$. To see this, observe that every
+iteration of the \textit{for} loop is executed in constant time.
+\qed
+\end{proof}
+
+\section*{Exercise 2}
+Let $\mathcal{L} \in \Sigma^*$. Show that $\mathcal{L} \in \textsc{RE}$ if and
+only if $\mathcal{L} = \{x \in \Sigma^*|\exists y \in \Sigma^*:
+\langle x, y \rangle \in B\}$, where $B \in \textsc{REC}$.
+
+\paragraph{Solution.}
+
+We will let $y$ be the bound in the number of execution steps of
+the Turing Machine. This will be utilized as a certificate of termination.
+
+\paragraph{For the forward direction.} Assume $\mathcal{L} \in \textsc{RE}$. Then
+there must exist a Turing Machine $M$ which enumerates it. Now construct the
+following set:
+
+\[
+  B = \{\langle x, y \rangle: M(x) \text{ terminates in } y \text{ steps}\}
+\]
+
+\begin{lemma}
+$\mathcal{L} = \{x: \exists y: \langle x, y \rangle \in B\}$
+\end{lemma}
+\begin{proof}
+By definition, if $x$ is recognised by $M$ then $M$ must terminate in a finite
+number of steps.
+\qed
+\end{proof}
+\begin{lemma}
+$B \in \textsc{REC}$
+\end{lemma}
+\begin{proof}
+We will prove this by constructing a Turing Machine $M'$ which computes $B$.
+This is done directly as follows: If an input $\langle x, y \rangle$ is given to
+$M'$, then $M'$ simulates $M$ for exactly $y$ steps. If $M$ has reached an
+acceptance state after $y$ steps, then $M'$ outputs \textit{yes}. Otherwise,
+$M'$ outputs \textit{no}.
+\qed
+\end{proof}
+
+\paragraph{For the inverse direction.} Let  $\mathcal{L} = \{x: \exists y:
+\langle x, y \rangle \in B\}$ for some $B \in \textsc{REC}$.
+
+\begin{lemma}
+$\mathcal{L} \in \textsc{RE}$
+\end{lemma}
+\begin{proof}
+Assume $B$ is computed by some Turing Machine $M'$. We will prove the lemma
+constructively by building a Turing Machine $M$ for $\mathcal{L}$. The
+construction is straightforward: Given $x$, the machine loops to try all $y \in
+\mathbb{N}$. For each of these $y$, it simulates $M'$ with input $\langle x, y
+\rangle$. Because $B \in \textsc{REC}$, therefore $M'$ will terminate in a
+finite number of steps for all of these inputs. Therefore, if a $y$ exists such
+that $\langle x, y \rangle \in B$, it will eventually be found. In that case,
+$M$ terminates and outputs \textit{yes}. Otherwise, $M$ does not terminate.
+\qed
+\end{proof}
+
+\section*{Exercise 3}
+Let $\mathcal{L} \subseteq \Sigma^*$. We define:
+
+\begin{align*}
+\mathcal{L}^0 &= \{\epsilon\}\\
+\mathcal{L}^1 &= \mathcal{L}\\
+\mathcal{L}^n &= \{w_1 \circ w_2 \circ \cdots \circ w_n \in \Sigma^*
+  : w_1, w_2, \cdots, w_n \in \mathcal{L}\}\\
+\mathcal{L}^* &= \bigcup_{i \in \mathbb{N}} \mathcal{L}^i
+\end{align*}
+
+Show that if $\mathcal{L} \in \textsc{RE}$ then $\mathcal{L}^* \in \textsc{RE}$.
+
+\paragraph{Solution.}
+
+\begin{figure}[t]
+\begin{algorithm}[H]
+  \caption{\label{alg.3}
+      The string partition Turing Machine parameterised by
+      a substring recogniser machine $M$
+  }
+  \begin{algorithmic}[1]
+      \Function{{\sf partition}$_M$}{$w$}
+        \State{Non-deterministically split $w$ into partition $w_1, w_2, \cdots w_n$}
+        \For{$i = 1 \text{ to } n$}
+            \If{$M(w_i) = \textsc{reject}$}
+                \State\Return{\sc reject}
+            \EndIf
+        \EndFor
+        \State\Return{\sc accept}
+      \EndFunction
+  \end{algorithmic}
+\end{algorithm}
+\end{figure}
+
+\begin{lemma}
+$\mathcal{L} \in \textsc{RE} \Rightarrow \mathcal{L}^* \in \textsc{RE}$
+\end{lemma}
+\begin{proof}
+Let $\mathcal{L}$ be recognisable by some Turing Machine $M$. We will prove this
+lemma constructively by building a Turing Machine $M^*$ for $\mathcal{L}^*$. The
+machine $M^*$ is shown in Algorithm~\ref{alg.3}. It takes $w$ as its input.
+Non-deterministically, it splits $w$ into all possible substrings $w_1, w_2,
+\cdots, w_n$ for all $n = 0 \cdots |w| - 1$. For each of these possible
+partitions, it simulates the execution of $M$ with input $w_i$. If any of the
+non-deterministic partitions is successful, none of the executions of $M$ will
+reject, but all will terminate. Therefore, the machine will accept the input.
+\qed
+\end{proof}
+
+\section*{Exercise 4}
+
+\subsection*{(a) Recursive case}
+Show that every recursive language is the union of two disjoint infinite
+recursive languages.
+
+\paragraph{Solution.}
+
+Let $\mathcal{L} \in \textsc{REC}$. We will construct $\mathcal{L}_1,
+\mathcal{L}_2$ such that $\mathcal{L}_1 \cup \mathcal{L}_2 = \mathcal{L}$ and
+$\mathcal{L}_1 \cap \mathcal{L}_2 = \emptyset$.
+
+We sort $\mathcal{L}$ in increasing order and let $\mathcal{L}_1$ be those items
+of $\mathcal{L}$ with odd index and $\mathcal{L}_2$ to be those with even index.
+Trivially, $\mathcal{L}_1 \cap \mathcal{L}_2 = \emptyset$ and they are both
+infinite due to the infinity of $\mathcal{L}$.
+
+\begin{figure}[t]
+\begin{algorithm}[H]
+  \caption{\label{alg.4a}
+      Splitting a \textsc{REC} language $\mathcal{L}$ into disjoint
+      partitions. The algorithm is parameterised by a Turing Machine $M$ for
+      $\mathcal{L}$.
+  }
+  \begin{algorithmic}[1]
+      \Function{{\sf even}$^{\sc REC}_M$}{$x$}
+          \If{$M(x) = \textsc{reject}$}
+              \State\Return{\textsc{reject}}
+          \EndIf
+          \Let{cnt}{0}
+          \For{$i = 1 \text{ to } x$}
+              \If{$M(i) = \textsc{accept}$}
+                  \Let{cnt}{cnt + 1}
+              \EndIf
+          \EndFor
+          \If{$cnt\ \%\ 2 = 0$}
+              \State\Return{\sc accept}
+          \EndIf
+          \State\Return{\sc reject}
+      \EndFunction
+  \end{algorithmic}
+\end{algorithm}
+\end{figure}
+
+\begin{lemma}
+$\mathcal{L}_1, \mathcal{L}_2 \in \textsc{REC}$
+\end{lemma}
+\begin{proof}
+We will show it for $\mathcal{L}_2$. We do this by construction. Let $M$ be a
+Turing Machine that recognises $M$. The construction is shown in
+Algorithm~\ref{alg.4a}. The new machine, $\textsf{even}^{\sc REC}_M$ machine
+takes an input $x$. If $M$ rejects $x$, so does $\textsf{even}^{\sc REC}_M$.
+Otherwise, it simulates the execution of $M$, counting the problem instances up
+to $x$ in which $M$ accepted. It only accepts if the count is even.
+
+The construction for $\mathcal{L}_1$ is analogous.
+\qed
+\end{proof}
+
+\subsection*{(b) Recursively enumerable case}
+Show that every recursively enumerable language is the union of two disjoint
+infinite recursively enumerable languages.
+
+\paragraph{Solution.}
+
+Let $\mathcal{L} \in \textsc{RE}$. As such, there is an enumerator $M$. Assume
+without loss of generality that this enumerator enumerates the language without
+repetitions. Again we will construct $\mathcal{L}_1, \mathcal{L}_2$ such that
+$\mathcal{L}_1 \cup \mathcal{L}_2 = \mathcal{L}$ and $\mathcal{L}_1 \cap
+\mathcal{L}_2 = \emptyset$.
+
+The enumerator gives a direct ordering of the elements of the language. Again
+we will split the language into even- and odd-indexed items. As before, clearly
+these will partition the language into two disjoint sets.
+
+To prove that $\mathcal{L}_1, \mathcal{L}_2$ are in $\sc RE$, it suffices to
+show that there is an enumerator for them. For the both cases, the construction
+is analogous to the $\textsc{REC}$ case. For example, it is not hard to see that
+an enumerator $M'$ for the even case can be constructed by having it simulate
+$M$ and only output the even-indexed items.
+
+\section*{Exercise 5}
+Let $f: \mathbb{N} \rightarrow \mathbb{N}$ be:
+
+\[
+    f(x) = \begin{cases}
+        1 \text{, if } \exists w \in \Sigma^*: M_x(w) \downarrow\\
+        \uparrow \text{ otherwise}
+    \end{cases}
+\]
+
+Show that $f$ is computable.
+
+\paragraph{Solution.}
+
+We prove the statement constructively. To compute $f$, we construct a machine
+$M$ which outputs $1$ if $\exists w \in \Sigma^*: M_x(w)\downarrow$ by
+simulating $M_x(w)$ for all inputs $w$ in a dove-tailing fashion. If
+$M_x(w)\uparrow$, then our machine does not halt, corresponding to the
+partiality of $f$. The exact construction is presented in Algorithm~\ref{alg.5}.
+
+\begin{figure}[t]
+\begin{algorithm}[H]
+  \caption{\label{alg.5}
+      A machine that recognises whether the $x^{\text{th}}$ Turing Machine
+      halts with some input.
+  }
+  \begin{algorithmic}[1]
+      \Function{{\sf halt-recogniser}}{$x$}
+          \Let{\ell}{0}
+          \While{\textsc{True}}
+              \Let{\ell}{\ell + 1}
+              \State{Initialise machine $M_x$ for input $\ell$}
+              \Let{i}{1}
+              \For{$w = \ell \text{ down to } 1$}
+                  \State{Simulate machine $M$ with input $w$ for exactly $i$
+                  steps}
+                  \If{$M$ \text{has terminated}}
+                      \State\Return{$1$}
+                  \EndIf
+                  \Let{i}{i + 1}
+              \EndFor
+          \EndWhile
+      \EndFunction
+  \end{algorithmic}
+\end{algorithm}
+\end{figure}
+
+\section*{Exercise 6}
+Let $f: \mathbb{N} \rightarrow \mathbb{N}$ be:
+
+\[
+    f(x) = \begin{cases}
+        x \text{, if } |\mathcal{L}(M_x)| \geq x\\
+        \uparrow \text{ otherwise}
+    \end{cases}
+\]
+
+Show that $f$ is computable.
+
+\paragraph{Solution.}
+
+Again we will prove this constructively. The construction is almost identical
+to the previous case. However, the machine must be modified to maintain a set
+of inputs $w$ that have been recognised by $M_x$. Once the set grows beyond the
+size $|s| \geq x$, the machine can return $x$. The exact construction is shown
+in Algorithm~\ref{alg.6}.
+
+\begin{figure}[t]
+\begin{algorithm}[H]
+  \caption{\label{alg.6}
+      A machine that recognises whether the $x^{\text{th}}$ Turing Machine
+      produces a language with at least $x$ elements.
+  }
+  \begin{algorithmic}[1]
+      \Function{{\sf language-counter}}{$x$}
+          \Let{\ell}{0}
+          \Let{s}{\emptyset}
+          \While{\textsc{True}}
+              \Let{\ell}{\ell + 1}
+              \State{Initialise machine $M_x$ for input $\ell$}
+              \Let{i}{1}
+              \For{$w = \ell \text{ down to } 1$}
+                  \State{Simulate machine $M_x$ with input $w$ for exactly $i$
+                  steps}
+                  \If{$M_x$ \text{has terminated}}
+                      \Let{s}{s \cup \{w\}}
+                      \If{$|s| \geq x$}
+                          \State\Return{$x$}
+                      \EndIf
+                  \EndIf
+                  \Let{i}{i + 1}
+              \EndFor
+          \EndWhile
+      \EndFunction
+  \end{algorithmic}
+\end{algorithm}
+\end{figure}
+
+\section*{Exercise 7}
+
+Let $\mathcal{L}$ be defined as follows:
+
+\begin{align*}
+\mathcal{L} = \{\langle M, w, n \rangle \in \Sigma^*:\ &n \neq 1
+                \text{ and during the computation of } M(w)\\
+                &\text{the head visits the } n^{\text{th}}
+                \text{ position of the tape}\}
+\end{align*}
+
+Determine whether $\mathcal{L} \in \textsc{REC}$.
+
+\paragraph{Solution.}
+
+We show that $\mathcal{L} \in \textsc{REC}$ by construction. The exact
+construction is shown in Algorithm~\ref{alg.7}. Our machine simulates $M$ until
+it either visits a tape position past $n$ or returns to a previously known
+configuration\footnote{Configurations are implied to be represented by some
+G\"odel encoding.}, in which case we can deduce it will never halt.
+
+\begin{figure}[t]
+\begin{algorithm}[H]
+  \caption{\label{alg.7}
+      The machine \textsf{tape-visited} that determines whether a particular
+      tape position $n$ is visited by another machine $M$ with input $w$.
+  }
+  \begin{algorithmic}[1]
+      \Function{{\sf tape-visited}}{$\langle M, w, n \rangle$}
+          \Let{s}{\emptyset}
+          \State{Initialise machine $M$ for input $w$}
+          \Let{c}{\text{initial configuration of } M(w)}
+          \Let{s}{s \cup \{c\}}
+          \While{\textsc{True}}
+              \State{Simulate machine $M(w)$ for one more step}
+              \Let{c}{\text{next configuration of } M(w)}
+              \If{$M(w)$ visits tape position $n$}
+                  \State\Return{\sc accept}
+              \EndIf
+              \If{$c \in s$}
+                  \State\Return{\sc reject}
+                  \Comment{Looping machine}
+              \EndIf
+              \Let{s}{s \cup \{c\}}
+              \If{$M(w)$ has terminated}
+                  \State\Return{\sc reject}
+              \EndIf
+              \Let{i}{i + 1}
+          \EndWhile
+      \EndFunction
+  \end{algorithmic}
+\end{algorithm}
+\end{figure}
+
+\begin{lemma}
+\textsc{tape-visited} halts for all inputs and computes $\mathcal{L}$.
+\end{lemma}
+\begin{proof}
+First, we note that \textsc{tape-visited} accepts if and only if $M(w)$ uses
+tape position $n$. Indeed, the accepting state is only reached when the
+simulated machine $M$ goes through a configuration which visits position $n$.
+Furthermore, because the simulation is done in single-step execution, a machine
+which visits the $n^{\text{th}}$ position of the tape must go through such a
+configuration.
+
+Next, we note that if $M(w)$ terminates without visiting tape position $n$, then
+\textsc{tape-visited} rejects. This follows directly from the termination check.
+Conversely, if \textsc{tape-visited} rejects, then this must only occur if the
+tape position $n$ is never visited. To see this, note that rejection occurs if
+the machine loops (and so a configuration $c$ previously attained is visited
+with $c \in s$), or $M(w)$ terminates without reaching $n$.
+
+Finally, we notice that \textsc{tape-visited} always terminates, even if $M(w)$
+does not terminate. To see this, assume for contradiction that
+\textsc{tape-visited} did not terminate, and observe that the only way for
+this to happen is if $M(w)$ does not terminate by always reaching a unique new
+configuration $c$. But the set $s$ of all machine configurations for a Turing
+Machine $M$ that runs with input $w$ and does not ever go past $n$ is finite.
+Indeed, $|s| = |\Sigma|^n |Q| n$.
+\qed
+\end{proof}
+
+\section*{Exercise 8}
+Let $\mathcal{L} \subseteq \Sigma^*$. Show that if $\mathcal{L} \in \textsc{RE}$
+then $\mathcal{L}_p = \{w \in \mathcal{L}: w = w^R\} \in \textsc{RE}$.
+
+\paragraph{Solution.}
+
+Again we will work constructively. Let $\mathcal{L} \in \textsc{RE}$ and $M$ be
+an enumerator for $\mathcal{L}$. We will construct an enumerator $M_p$ for
+$\mathcal{L}_p$. The enumerator construction is straightforward: The enumerator
+$M_p$ simulates the execution of $M$. Whenever $M$ generates some output $w$,
+then $M_p$ simply checks if $w = w^R$. If yes, then $M_p$ generates $w$.
+Otherwise, $M_p$ skips this particular output $w$ and continues with the
+simulation.
+
+\section*{Exercise 9}
+
+Let $A, B, C \subseteq \Sigma^*$. We call $C$ a distinguisher of $A$ and $B$ if
+$A \subseteq C$ and $B \subseteq \overline C$. Let $A, B \subseteq \Sigma^*$
+with $A \cap B = \emptyset$ and $\overline A, \overline B \in \textsc{RE}$.
+Show that there is some $C \in \textsc{REC}$ which is a distinguisher of $A, B$.
+
+\paragraph{Solution.}
+
+We show by construction that there is a $C \in \textsc{REC}$ which separates $A$
+and $B$. Because $\overline A, \overline B \in \textsc{RE}$, there are Turing
+Machines $N$ and $M$ which recognise $\overline A$ and $\overline B$
+respectively. To construct a Turing Machine $\textsf{distinguish}_{N,M}$ for
+some $C$ we follow the construction shown in Algorithm~\ref{alg.9}.
+
+\begin{figure}[t]
+\begin{algorithm}[H]
+  \caption{\label{alg.9}
+      A machine that computes a distinguisher $C$ of two languages $A, B \in
+      \text{co-}\textsc{RE}$. It is parameterised by their Turing Machines $N,
+      M$.
+  }
+  \begin{algorithmic}[1]
+      \Function{{\sf distinguish}$_{N,M}$}{$w$}
+          \State{Initialise machines $N(w), M(w)$}
+          \Let{i}{1}
+          \While{\textsc{True}}
+              \State{Simulate one more step of $N(w)$}
+              \If{$N(w)$ has halted with \textsc{accept}}
+                  \Comment{$w \not\in A$}
+                  \State\Return{\textsc{reject}}
+              \EndIf
+              \State{Simulate one more step of $M(w)$}
+              \If{$M(w)$ has halted with \textsc{accept}}
+                  \Comment{$w \not\in B$}
+                  \State\Return{\textsc{accept}}
+              \EndIf
+              \Let{i}{i + 1}
+          \EndWhile
+      \EndFunction
+  \end{algorithmic}
+\end{algorithm}
+\end{figure}
+
+The algorithm \textsf{distinguish} simulates the execution of the Turing
+Machines $N, M$ in tandem by running one step in each for ever. Let $C$ be the
+language that \textsf{distinguish}$_{N,M}$ computes.
+
+\begin{lemma}
+\textsf{distinguish}$_{N,M}$ always halts.
+\end{lemma}
+\begin{proof}
+Assume for contradiction that there were some input $w$ for which
+\textsf{distinguish}$_{N,M}$ did not halt for. But then this means that neither
+of $N(w), M(w)$ halt, and therefore we have that $w \in A$ and $w \in B$. But
+this is a contradiction as, by assumption, we have that $A \cap B = \emptyset$.
+\qed
+\end{proof}
+
+\begin{lemma}
+$A \subseteq C$ and $B \subseteq \overline C$.
+\end{lemma}
+\begin{proof}
+Suppose \textsf{distinguish}$_{N,M}$ is executed with some input $w$ and
+halts. Suppose $w \in A$. Then $w \not\in B$, and therefore $w \in \overline B$.
+In that case, $M$ will halt with an accepting state and therefore
+\textsf{distinguish}$_{N,M}$ will halt and accept as required. The case $w \in
+B$ is analogous.
+\qed
+\end{proof}
+
+\section*{Exercise 10}
+
+Let $K = \{x \in \mathbb{N}: M_x(x)\downarrow\}$ and
+$R = \{x \in \mathbb{N}: \text{dom}(\phi_{M_x}) \in \textsc{REC}\}$.
+
+\subsection*{(a) Show that $R \not\subseteq K$}
+
+To show this, it suffices to produce a counter-example of some $x$ such that $x
+\in R$ but $x \not\in K$. Indeed let $x$ but the G\"odel encoding of a Turing
+Machine that loops for ever. Then clearly $x \not\in K$. But
+$\text{dom}(\phi_{M_x}) = \emptyset$ which is trivially computable and so $x
+\not\in R$.
+
+\subsection*{(b) Show that $R \cap K \neq \emptyset$}
+
+It suffices to produce a counter-example of some $x$ such that $x \in R \cap K$.
+Indeed, let $x$ be the G\"odel encoding of a Turing Machine which has a single
+state and halts by immediately accepting. Then clearly $x \in K$. But
+$\text{dom}(\phi_{M_x}) = \Sigma^*$ which is trivially computable and so $x \in
+R$.
+
+\subsection*{(c) Show that $K \sim \overline K$}
+
+To show this, we note that $K$ is the set of all Turing Machines that terminate
+when they are given the encoding of themselves as input, while $\overline K$ is
+the set of all Turing Machines that do not terminate when they are given the
+encoding of themselves as input. Because $K, \overline K \subseteq \mathbb{N}$,
+to show that $K \sim \overline K$, it suffices to show that both $K$ and
+$\overline K$ are infinite.
+
+\begin{lemma}
+$K$ and $\overline K$ are both infinite.
+\end{lemma}
+\begin{proof}
+$K$ is infinite because there are an infinite number of machines that halt when
+executed with their own encoding as input. To see this, take the machine
+parameterised by $\kappa \in \mathbb{N}$ that simply counts from $1$ to $\kappa$
+and then halts. All of these countably many machines are distinct.
+
+$\overline K$ is infinite because there are an infinite number of machines that
+do not halt when executed with their own encoding as input. To see this, take
+the machine parameterised by $\kappa \in \mathbb{N}$ that first counts from $1$
+to $\kappa$, then resets the counter, and, finally, loops for ever. All of these
+countably many machines are also distinct.
+\qed
+\end{proof}
+
+\section*{Exercise 11}
+Let $\mathcal{L} \subseteq \Sigma^*$ and let $N$ be a non-deterministic Turing
+Machine deciding $\mathcal{L}$. Show that there is a deterministic Turing
+Machine $M$ that decides $\mathcal{L}$.
+
+\paragraph{Solution.}
+
+Given a non-deterministic Turing Machine $N$ executed with some input $w$, we
+observe that the computation over an alphabet $\Sigma = \{0, 1\}$ follows a
+binary tree. To construct the deterministic machine $M$, we have $M$ simulate
+the execution of $N$ in a step-by-step fashion by exploring the computation tree
+of $N$ in a breadth-first search fashion. If the machine $N$ terminates, it will
+do so at a finite depth on some branch. As $M$ searches using BFS, it will be
+able to find the finite depth branch in finite (albeit exponential) time. This
+execution strategy is depicted in Figure~\ref{fig.simulation}.
+
+\begin{figure}
+    \caption{Simulating a non-deterministic Turing Machine using a
+    deterministic Turing Machine by BFS traversal of the execution tree.}
+    \centering
+    \includegraphics[width=0.5\columnwidth,keepaspectratio]{nd-simulation.png}
+    \label{fig.simulation}
+\end{figure}
+
+\end{document}
